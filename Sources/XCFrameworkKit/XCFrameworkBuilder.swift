@@ -14,6 +14,7 @@ public class XCFrameworkBuilder {
     public var outputDirectory: String?
     public var buildDirectory: String?
     public var derivedDataDirectory: String?
+    public var allScheme: String?
     public var iOSScheme: String?
     public var watchOSScheme: String?
     public var tvOSScheme: String?
@@ -72,6 +73,13 @@ public class XCFrameworkBuilder {
         
         guard let project = project else {
             return .failure(XCFrameworkError.projectNotFound)
+        }
+
+        if let allScheme = self.allScheme {
+            self.watchOSScheme = allScheme
+            self.iOSScheme = allScheme
+            self.tvOSScheme = allScheme
+            self.macOSScheme = allScheme
         }
         
         guard watchOSScheme != nil || iOSScheme != nil || macOSScheme != nil || tvOSScheme != nil else {
@@ -144,16 +152,16 @@ public class XCFrameworkBuilder {
         print("Building scheme \(scheme) for \(sdk.rawValue)...")
         var frameworkArguments = [String]()
         //path for each scheme's archive
-        let archivePath = buildPath + "\(scheme)-\(sdk.rawValue).xcarchive"
+        let archivePath = buildPath + "archives/\(scheme)-\(sdk.rawValue).xcarchive"
         //array of arguments for the archive of each framework
         //weird interpolation errors are forcing me to use this "" + syntax.  not sure if this is a compiler bug or not.
         var archiveArguments = ["-project", "" + project, "-scheme", "" + scheme, "archive", "SKIP_INSTALL=NO", "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"]
         if let compilerArguments = compilerArguments {
             archiveArguments.append(contentsOf: compilerArguments)
         }
-        if let derivedDataDirectory = self.derivedDataDirectory {
-            archiveArguments.append(contentsOf: ["-derivedDataPath", derivedDataDirectory])
-        }
+
+        archiveArguments.append(contentsOf: ["-derivedDataPath", buildPath + "derived"])
+
         archiveArguments.append(contentsOf: ["-archivePath", archivePath, "-sdk", sdk.rawValue])
         if verbose {
             print("   xcodebuild \(archiveArguments.joined(separator: " "))")
