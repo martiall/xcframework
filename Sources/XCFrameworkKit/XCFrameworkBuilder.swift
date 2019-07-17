@@ -13,6 +13,7 @@ public class XCFrameworkBuilder {
     public var project: String?
     public var outputDirectory: String?
     public var buildDirectory: String?
+    public var derivedDataDirectory: String?
     public var iOSScheme: String?
     public var watchOSScheme: String?
     public var tvOSScheme: String?
@@ -26,6 +27,7 @@ public class XCFrameworkBuilder {
         case noSchemesFound
         case buildDirectoryNotFound
         case outputDirectoryNotFound
+        case derivedDataDirectoryNotFound
         case buildError(String)
         
         public var description: String {
@@ -38,6 +40,8 @@ public class XCFrameworkBuilder {
                 return "No schemes found."
             case .buildDirectoryNotFound:
                 return "No build directory found."
+            case .derivedDataDirectoryNotFound:
+                return "No derived data directory found."
             case .outputDirectoryNotFound:
                 return "No output directory found."
             case .buildError(let stderr):
@@ -86,7 +90,7 @@ public class XCFrameworkBuilder {
         
         //final build location
         let finalBuildDirectory = buildDirectory.hasSuffix("/") ? buildDirectory : buildDirectory + "/"
-        
+
         //final xcframework location
         let finalOutputDirectory = outputDirectory.hasSuffix("/") ? outputDirectory : outputDirectory + "/"
         let finalOutput = finalOutputDirectory + name + ".xcframework"
@@ -146,6 +150,9 @@ public class XCFrameworkBuilder {
         var archiveArguments = ["-project", "" + project, "-scheme", "" + scheme, "archive", "SKIP_INSTALL=NO", "BUILD_LIBRARY_FOR_DISTRIBUTION=YES"]
         if let compilerArguments = compilerArguments {
             archiveArguments.append(contentsOf: compilerArguments)
+        }
+        if let derivedDataDirectory = self.derivedDataDirectory {
+            archiveArguments.append(contentsOf: ["-derivedDataPath", derivedDataDirectory])
         }
         archiveArguments.append(contentsOf: ["-archivePath", archivePath, "-sdk", sdk.rawValue])
         if verbose {

@@ -24,6 +24,7 @@ struct BuildCommand: CommandProtocol {
         let name: String?
         let outputDirectory: String
         let buildDirectory: String
+        let derivedDataDirectory: String?
         let iOSScheme: String?
         let watchOSScheme: String?
         let tvOSScheme: String?
@@ -31,8 +32,8 @@ struct BuildCommand: CommandProtocol {
         let verbose: Bool
         let compilerArguments: [String]
         
-        static func create(_ project: String?) -> (String?) -> (String) -> (String) -> (String?) -> (String?) -> (String?) -> (String?) -> (Bool) -> ([String]) -> Options {
-            return { name in { outputDirectory in { buildDirectory in { iOSScheme in { watchOSScheme in { tvOSScheme in { macOSScheme in { verbose in { compilerArguments in Options(project: project, name: name, outputDirectory: outputDirectory, buildDirectory: buildDirectory, iOSScheme: iOSScheme, watchOSScheme: watchOSScheme, tvOSScheme: tvOSScheme, macOSScheme: macOSScheme, verbose: verbose, compilerArguments: compilerArguments) } } } } } } } } }
+        static func create(_ project: String?) -> (String?) -> (String) -> (String) -> (String?) -> (String?) -> (String?) -> (String?) -> (String?) -> (Bool) -> ([String]) -> Options {
+            return { name in { outputDirectory in { buildDirectory in { derivedDataDirectory in { iOSScheme in { watchOSScheme in { tvOSScheme in { macOSScheme in { verbose in { compilerArguments in Options(project: project, name: name, outputDirectory: outputDirectory, buildDirectory: buildDirectory,derivedDataDirectory: derivedDataDirectory, iOSScheme: iOSScheme, watchOSScheme: watchOSScheme, tvOSScheme: tvOSScheme, macOSScheme: macOSScheme, verbose: verbose, compilerArguments: compilerArguments) } } } } } } } } } }
         }
         
         static func evaluate(_ mode: CommandMode) -> Result<Options, CommandantError<CommandantError<()>>> {
@@ -42,6 +43,7 @@ struct BuildCommand: CommandProtocol {
                 <*> mode <| Option(key: "name", defaultValue: nil, usage: "REQUIRED: the framework name, Example: <name>.framework")
                 <*> mode <| Option(key: "output", defaultValue: FileManager.default.currentDirectoryPath, usage: "the output directory (default: .)")
                 <*> mode <| Option(key: "build", defaultValue: FileManager.default.currentDirectoryPath.appending(defaultBuildDirectory), usage: "build directory (default: \(defaultBuildDirectory)")
+                <*> mode <| Option(key: "derivedData", defaultValue: nil, usage: "derived data directory")
                 <*> mode <| Option(key: "ios", defaultValue: nil, usage: "the scheme for your iOS target")
                 <*> mode <| Option(key: "watchos", defaultValue: nil, usage: "the scheme for your watchOS target")
                 <*> mode <| Option(key: "tvos", defaultValue: nil, usage: "the scheme for your tvOS target")
@@ -57,6 +59,7 @@ struct BuildCommand: CommandProtocol {
             builder.project = options.project
             builder.outputDirectory = options.outputDirectory
             builder.buildDirectory = options.buildDirectory
+            builder.derivedDataDirectory = options.derivedDataDirectory
             builder.iOSScheme = options.iOSScheme
             builder.watchOSScheme = options.watchOSScheme
             builder.tvOSScheme = options.tvOSScheme
